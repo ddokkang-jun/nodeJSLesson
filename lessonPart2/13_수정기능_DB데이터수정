@@ -182,23 +182,29 @@ app.put('/edit', function(요청, 응답){
 
 
 
-나는 이렇게 했다.
+나의 코드:
+
+수정하기 버튼이 눌리면 라우팅되도록 함(수업에서는 이 방법 안씀)
+수정하기 버튼이 눌리면 get요청을 날리는데
+/edit/<%= posts[i]._id %> 되면?하면? /edit:id 로 라우팅이 되도록 server.js에서 구현함
+
 
 (list.ejs)
 
 <button class="btn btn-danger"><a href="/edit/<%= posts[i]._id %>">수정하기</a></button>
 
-수정하기 버튼이 눌리면 라우팅됨
-get요청을 날리는데
-/edit/<%= posts[i]._id %> 되면?하면?
+
 
 (server.js)
 
+// list.ejs에서 수정하기 눌리면 실행됨
 app.get('/edit/:id', function (요청, 응답) {
   db.collection('post').findOne({ _id: parseInt(요청.params.id) }, function (에러, 결과) {
     응답.render('edit.ejs', { post: 결과 })
   })
 });
+
+// edit.ejs에서 수정하기 누르면 실행됨
 app.put('/edit', function (요청, 응답) {
   db.collection('post').updateOne({ _id: parseInt(요청.body.id) }, { $set: { title: 요청.body.title, date: 요청.body.date } },
     function (에러, 결과) {
