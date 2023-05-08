@@ -1,0 +1,265 @@
+MongoDB 셋팅하기 (무료 호스팅도 받아보자)
+
+
+
+
+
+
+기본적인 웹사이트 만들땐
+
+1. 가장 기본적인 html 페이지를 하나 만들어 놓고 
+
+2. 서버로 데이터를 전송하고 싶다면~ form 태그같은거 넣어넣고 서버(API) 만들면 끝임(서버에서 원하는대로 정보를 처리하면 댐)
+
+
+
+이전 챕터의 마지막 시간에 해봤던 것들
+
+(form을 이용해서 기본적인 서버를 만들어놓고 데이터를 전송하고 등등의 것들)
+
+까지가 기본적인 웹사이트 만들기 였음.
+
+
+
+
+Database 는 무엇인가?
+
+
+그냥 데이터를 일정한 형식으로 저장할 수 있게 도와주는 곳이라고 보시면 되겠습니다. 
+
+가장 쉽게볼 수 있는게 바로 엑셀입니다.
+
+엑셀에선 시트를 하나 만드신 후 행과 열에 원하는 데이터를 기입하면 자료 저장 끝이죠?
+
+엑셀처럼 가로세로 나눠져 있는 데이터베이스를 관계형 데이터베이스라고 한다.
+
+하지만 데이터베이스는 간지나는 SQL이라는 언어를 써서 데이터를 입력, 출력합니다.
+
+DB종류: 
+
+1.관게형 데이터베이스 : MySQL 빠르고 효율적(엑셀처럼생겼음),Maria DB, Oracle, MS SQL Server
+2.NoSQL :Object자료형 : 행과 열이 필요없음, MongoDB
+
+
+
+대문자로 쓰는 이상한 언어입니다. 
+
+하지만 이걸 또 배우고 그럴 시간이 없기 때문에 우린 NoSQL이라는 
+
+SQL언어를 쓰지 않고도 쓸 수 있는 쉬운 DB를 배워보도록 합시다. 
+
+
+
+그 중 MongoDB라는 것을 사용할 것인데 그 이유는..
+
+- 처음 다룰 때 어려운 셋팅작업이 필요하지 않음 (스키마 생성 등 필요없음)
+
+- SQL 안배워도 됨
+
+- 복잡한 자료형 몰라도 됨
+
+- 평생 무료 호스팅해주는 곳이 있음 
+
+그리고 DB의 종류에 대해서도 할말이 많은데 그건 다음 강의에서 알아보도록 합시다. 
+
+
+
+
+
+
+MongoDB Atlas 가입 후 호스팅받기
+
+
+
+DB를 여러분 집 컴퓨터에 설치하기도 하지만 사이트를 실제 배포할 것이라면 클라우드 서비스를 이용하는 것이 매우 안전합니다.
+
+백업도 알아서 해주고 갑자기 사람이 터질 때 용량 걱정도 없고 
+
+그리고 무엇보다 접속 속도가 빠릅니다. 
+
+근데 이걸 무료로 호스팅 해주는 고마운 MongoDB Atlas라는 사이트가 하나 있습니다.
+
+
+MongoDB Atlas 가입/초기셋팅 방법
+
+1. 구글에 "Mongodb atlas" 라고 검색해서 들어가거나 mongodb.com 홈페이지를 방문합니다 .
+
+2. 가입합니다. 아마 메일인증 필요
+
+3. 가입시 뭐 채우라고 하면 잘 채워봅니다. 아무거나 선택한다.
+
+
+4. 무료 티어를 선택해서
+
+서버위치 고르라고 하면 서버위치도 선택합니다. 
+한국 유저들에게 빠른 서비스 제공하려면 서울을 선택합시다. 
+
+
+5. Database Access 메뉴에서 DB 접속용 아이디/비번을 생성합니다.
+
+데이터베이스 접속할 수 있는 아이디/비번을 새로 만들어주는겁니다.
+
+왜냐면 하나의 데이터베이스를 여러사람이 사용할 수도 있으니까요.  
+
+아주 안전해보이는 "admin/qwer1234" 이런 아이디 비번은 어떨까요 아무튼 만들고 잘 기억해두십시오. 
+
+built-in-Role 탭에서
+주의점은 역할을 "atlas admin"으로 선택하자. 
+
+그래야 그 아이디로 nodejs에서 DB 접속가능
+
+
+
+▼6.왼쪽탭에 "Network Access" 메뉴 클릭 < Add IP Address 녹색버튼클릭 : IP를 추가합니다.
+
+데이터베이스 접속할 수 있는 IP를 미리 정의해놓는 일종의 보안장치입니다.
+
+스타벅스에서 코딩하실게 분명하니 "Allow access from anywhere"을 누르시거나 0.0.0.0/0 을 추가합니다. 
+-Allow access from anywhere 버튼을 누르면 자동으로 0.0.0.0/0 을 추가됨.
+
+
+
+▼7. 왼쪽 상단에 Database 탭메뉴 클릭 / collection 만들기를 진행합니다.
+
+Cluster는 하나의 호스팅 공간이고
+
+거기 안에 여러분의 데이터베이스를 만들어야 데이터를 저장할 수 있습니다. 
+
+다음시간에 할 것이긴 한데 아무튼 먼저 합시다. 
+
+- Cluster 오른쪽에 < Browse Collections 버튼 클릭 < add My Own Data 클릭
+
+- Create Database 모달나옴 < Database name 인풋에 todoapp이라고 적고,
+
+- Collection name < post 라고 적음 < create 버튼 클릭
+
+
+▲ 데이터베이스 이름을 맘대로 설정해주면 됩니다.
+
+저는 이렇게 했는데 이러면 todoapp 이라는 이름의 데이터베이스가 하나 생성됩니다. 
+
+이제 이 데이터베이스를 여러분의 컴퓨터에서 접속하려면 
+
+강의에서 설명하는 접속 url을 여러분 코드에 복붙해주면 됩니다.
+
+접속 url엔 여러분의 디비 접속용 아이디/비번/데이터베이스 이름이 들어가야합니다. 
+
+
+여기까지 가입 및 셋팅 설명이고 나머지 설명은
+
+인강에서 듣자.
+
+
+
+
+
+DB 접속하는 URL 찾아오기
+
+
+server.js에서 DB에 접속하려면 접속 방법을 알아야겠죠? 
+
+
+1. 메인화면 셋팅이 끝나면 CONNECT라는 작은 흰색 버튼 누르기
+
+2. 가운데 Connect Your Application 버튼 누르기 
+: 이 부분은 강의와 다름 맨위 메뉴 driver 어쩌구 저쩌구 누르면 댐
+
+3. Choose your driver version 에서 Node.js 선택되어있는지 잘 확인하기
+
+4. (2) 밑에 접속 URL(Connection String) 긴게 뜨면 복사해서 일단 메모장 같은 곳에 저장해놓기
+
+mongodb+srv://admin:<password>@cluster0.5lk2o3z.mongodb.net/?retryWrites=true&w=majority
+
+끝입니다. 이거 접속 URL만 잘 써주시면 이제 Node.js로 돌아가는 파일에서 여러분 DB와 직접 통신이 가능합니다. 
+
+
+
+
+
+이제 vs code로 돌아가서
+
+Server.js 에 가서 
+
+DB접속이 잘 되나 안되나 해보자 
+
+
+1. 터미널 켜서 
+npm install mongodb@3.6.4 를 입력해서 라이브러리를 설치합니다. 
+(참고)인강에서 강사의 버전을 마출려고 mongodb@3.6.4설치함
+
+그냥 MongoDB 접속을 쉽게 도와주는 라이브러리입니다. 
+
+
+
+2. server.js 상단 쯤에 다음 코드를 추가합니다.
+
+const MongoClient = require('mongodb').MongoClient;
+require 라는 글자 많은 곳에 함께 위치시켜 주면 될듯 합니다. 
+
+
+
+3. 하단에 다음 코드를 입력해줍니다. 
+
+MongoClient.connect('아까 챙겨온 접속URL', function(에러, client){
+  if (에러) return console.log(에러);
+  //서버띄우는 코드 여기로 옮기기
+  app.listen('8080', function(){
+    console.log('listening on 8080')
+  });
+})
+
+접속 URL은 대충 이렇게 생겼는데
+
+mongodb+srv://디비계정아이디:디비계정패스워드@어쩌구/?retryWrites=true&w=majority
+
+빨간 부분을 여러분의 DB접속용 아이디/비번으로 잘 채워 입력해야합니다. admin/qwer1234 였음....
+
+그리고 app.listen이라고 그 서버 띄우는 코드를 여기 안으로 옮겨주시면 되겠습니다.
+
+그리고 터미널에서 nodemon server.js로 서버를 실행시켜보면 터미널에 listening on 8080이라고 잘 뜨죠?
+
+아무튼 뜨면 성공입니다.
+
+
+
+
+warning 이런게 뜨는건 상관없는데 에러 등이 뜨거나 listening on 8080 글자가 안뜬다면 
+
+1. 접속 URL 양끝에 따옴표 잘있는지 확인하시고
+
+2. URL 안에 아이디 비번란에 Atlas 계정이 아니라 Database Access 메뉴에서 만든 DB 계정 넣었는지 다시 확인하시고
+
+3. URL 내에 비번 입력시 특수문자를 넣어야하시면 (참고) 하십시오. 귀찮으면 DB접속용 계정만들 때 특수문자를 넣지맙시다.
+
+4. Network Access 메뉴에서 허용한 IP에서 접속하고 있는지
+
+5. app. listen 코드를 저기로 옮긴거 맞습니까
+
+6. 나머지는 오타입니다
+
+
+
+
+
+
+또 오타났을까봐 server.js 
+
+
+const express = require('express')
+app.use(express.urlencoded({ extended: true }));
+const app = express()
+const MongoClient = require('mongodb').MongoClient
+
+
+MongoClient.connect('님 접속 URL', function(에러, client){
+  if (에러) return console.log(에러)
+  app.listen(8080, function() {
+    console.log('listening on 8080')
+  })
+})
+
+//여기 이하는 쓸데없는 app.get 이런 코드들
+
+app.get('/', function(요청, 응답) { 
+  응답.sendFile(__dirname +'/index.html')
+}) 

@@ -1,0 +1,271 @@
+게시물마다 번호를 달아 저장하려면
+
+
+- 이번강의 목표 : 
+
+- 몽고디비에 counter라는 collection 하나 더 만들고 
+- 내용을 넣은 다음 사용자가 /add post 요청을 하면 
+- _id: 유니크한 아이디를 가진 데이터를 몽고디비에 추가하고
+- 총게시물 갯수를 증가할 수 있도록 셋팅하기
+- 다음강의와 이어짐
+
+
+
+
+- 몽고디비로 가서 
+- cluster로 가서 
+- todoapp 오른쪽에 조그만 플러스 버튼을 누른다.
+- create collection 탭이 나오면 collection name 을 counter라고 적어주자.
+- 새로운 컬렉션을 만들었다.
+- 현재 아무런 데이터가 없다.
+- insert document 클릭한다.
+- insert collection 이 뜨면 데이터를 만들자.
+- totalPost : "0" 이라고 하고 스키마를 Int32로 바꾼다.
+- name: "게시물 갯수"
+- 항목을 추가한다.
+- 이렇게 하고 
+
+- vs code로 가서 
+
+- sever.js에 다가 
+
+app.post('/add', function (요청, 응답){
+  응답.send('전송완료');
+  db.collection('counter').findOne({name:'게시물 갯수'}, function(에러, 결과){
+    console.log(결과.totalPost);
+    var 총게시물갯수 = 결과.totalPost;
+    
+    db.collection('post').insertOne({_id : 총게시물갯수 + 1, 제목:요청.body.title,날짜:요청.body.date}, function (에러, 결과) {
+      console.log("저장완료");
+    });
+  }); 
+})
+
+이제 counter 컬렉션에 있는 totalPost의 숫자도 1증가 시켜줘야한다. 그건 다음 강의에서 배움
+
+
+
+
+
+
+
+
+
+
+
+
+0:00 게시물마다 _id 번호를 다는 이유와 중요성
+
+4:05 게시물 갯수 기록을 위한 counter라는 collection 새로 만들고 자료넣기
+
+7:18 findOne()함수로 counter안의 totalPost라는 데이터를 꺼내보자
+
+
+
+
+
+"_id를 달아서 저장합시다."
+
+
+
+"MongoDB에 데이터를 저장할 땐 _id라는 값을 꼭 넣으셔야합니다. 그래야 삭제도 쉽고 나중에 수정도 쉬우니까요. "
+
+아까 모르고 안넣으셨다고요? 괜찮습니다.
+
+안넣으시면 MongoDB에서 알아서 ObjectId() 어쩌구 이런걸 만들어서 아이디를 강제로 부여해줍니다.  
+
+무작위의 숫자와 문자로 이루어져있는데 
+
+이게 싫으면 애초에 저장할 때 직접 _id를 강제로 달아주셔도 됩니다.
+
+
+
+몇강 전에 작성했던 post 요청 처리하는 서버코드를 다시 살펴봅시다. 
+
+app.post('/add', function(요청, 응답){
+  응답.send('전송완료');
+  db.collection('post').insertOne( { _id : 1, 제목 : 요청.body.title, 날짜 : 요청.body.date } , function(){
+    console.log('저장완료')
+  });
+});
+
+위의 코드에 주황색으로 표시된 부분을 새로 추가했습니다.
+
+insertOne 함수 안에 _id : 1 이라는 항목을 요로케 써주시면... 번호달아서 저장하기 끝입니다.
+
+
+
+
+그런데 1이라고 하드코딩을 해버렸네요. 글 쓸 때마다 항상 _id : 1일 수는 없죠?
+
+2번째 글이면 _id: 2, 
+
+3번째 글이면 _id : 3이 되어야 합니다. 
+
+
+
+
+
+다른 DB에선 _id를 자동으로 1증가시켜서 추가해주세요~ 이런 기능이 있는데 (Auto Increment라고 합니다)
+
+MongoDB는 그런거 없습니다. (실은 별로 필요없어서 그렇습니다. 정수말고 자동으로 부여되는 ObjectId도 전혀 문제없음) 
+
+그래서 여러분이 직접 지금까지 몇번 게시물을 발행했는지를 어딘가에 기록해두셔야합니다.
+
+그리고 방금 코드를 이렇게 바꾸면 되겠죠? 
+
+app.post('/add', function(요청, 응답){
+  응답.send('전송완료');
+  db.collection('post').insertOne( { _id : 지금까지 발행한 게시물 갯수 + 1, 제목 : 요청.body.title, 날짜 : 요청.body.date } , function(){
+    console.log('저장완료')
+  });
+});
+
+_id : 1 이라고 하드코딩 하지 말고 위 코드 처럼 바꾸면
+
+글을 하나 발행할 때마다 유니크한 _id가 부여되겠군요.
+
+
+
+
+
+
+
+
+지금까지 몇번 게시물을 발행했는지 기록합시다.  
+
+
+
+여러분 mongodb atlas 홈페이지 들어가셔서 대시보드에서 collection을 하나 더 만들도록 합시다. 
+
+
+
+
+좌측에 여러분 todoapp이라는 데이터베이스에 + 버튼을 누르시면 collection(파일)을 하나 더 생성 가능합니다. 
+
+counter라는 이름을 가진 collection을 생성합시다. 
+
+
+
+
+
+
+
+방금 새로만든 counter라는 콜렉션에 데이터를 하나 강제로 집어넣어봅시다. 
+
+
+
+
+
+우측에 보면 Insert Document 흰버튼을 누르시면 강제로 항목을 하나 추가 가능합니다. 
+
+그리고 이렇게 그대로 작성한 후 Insert 버튼을 누르면 되겠습니다. 
+
+(totalPost 라는 항목은 Int32로 셋팅하는거 잊지마세요)
+
+
+
+
+
+이게 바로 여러분이 지금까지 몇번 게시물을 발행했는지를 기록할 공간입니다. 
+
+totalPost라는 곳에 저장할 것입니다. 
+
+지금은 아무 게시물도 발행되지 않았다고 생각하고 초기값은 0이라고 합시다. 
+
+
+
+
+
+그럼 아까 POST 요청 처리하는 코드를 수정해야겠군요
+
+
+
+그리고 방금 코드를 이렇게 바꾸면 되겠죠? 
+
+app.post('/add', function(요청, 응답){
+  
+  counter라는 콜렉션에서 totalPost라는 총 게시물 갯수 숫자를 가져와서
+  var 총게시물갯수 = 여기에 저장함
+  그 다음에 밑에 코드 실행
+  db.collection('post').insertOne( { _id : (총게시물갯수 + 1), 제목 : 요청.body.title, 날짜 : 요청.body.date } , function(){
+    console.log('저장완료')
+    응답.send('전송완료');
+  });
+});
+
+한글로 예쁘게 적은 부분을 자바스크립트 코드로 그대로 번역만 하시면 되겠습니다. 
+
+구글 검색만 잘 하면 번역따위 쉽게 쉽게 가능합니다. 
+
+
+
+
+app.post('/add', function(요청, 응답){
+  db.collection('counter').findOne({name : '게시물갯수'}, function(에러, 결과){
+    var 총게시물갯수 = 결과.totalPost;
+    db.collection('post').insertOne( { _id : (총게시물갯수 + 1), 제목 : 요청.body.title, 날짜 : 요청.body.date } , function(){
+      console.log('저장완료')
+      응답.send('전송완료');
+    });
+  });
+  
+});
+
+1. findOne함수를 쓰시면 collection 내에서 내가 원하는 문서를 쉽게 찾을 수 있습니다. 
+
+쓰는 법은 강의를 참고합니다. 그럼 찾은 결과는 function내의 결과라는 이름의 변수에 담겨옵니다.
+
+2. 그럼 아까 저장한 totalPost라는 자료도 출력가능합니다. 그걸 총게시물갯수 변수에 저장합니다. 
+
+3. 그리고 그 다음에 post라는 콜렉션에 insertOne을 써서 제대로된 _id와 함께 자료를 저장합니다. 끝!
+
+4. 그리고 응답.send 라는 코드를 이용해 응답해줍니다. (응답.어쩌구는 꼭 들어있어야합니다)
+
+
+
+
+이런 긴 코드는 무슨 예술작품처럼 한눈에 보고 이해하려하시면 안됩니다.
+
+위에서 부터 한줄한줄 읽어나가셔야합니다.
+
+그럼 이해를 돕기 위해 위 코드를 차례로 다시 설명해드리자면
+
+
+
+app.post('/add', function(요청, 응답){
+  db.collection('counter').findOne({name : '게시물갯수'}, function(에러, 결과){
+    var 총게시물갯수 = 결과.totalPost;
+    db.collection('post').insertOne( { _id : (총게시물갯수 + 1), 제목 : 요청.body.title, 날짜 : 요청.body.date } , function(){
+      console.log('저장완료')
+      응답.send('전송완료');
+    });
+  });
+  
+});
+
+1번줄 : 누군가 /add 경로로 post 요청을 하면
+
+2번줄 : counter라는 콜렉션에서 총게시물갯수 저장해놓은 문서를 찾습니다. 그 찾은 문서는 결과라는 변수에 담겨옵니다.
+
+3번줄 : 결과.totalPost하면 총게시물 갯수가 뿅하고 출현합니다. 그걸 var 총게시물갯수 변수에 저장해서 사용합니다.
+
+4번줄 : 이제 글저장 시간입니다. post라는 콜렉션에 insertOne을 이용해 게시물을 추가합니다. 추가할 때 _id를 var 총게시물갯수를 이용해 제대로 부여해줍니다. 
+
+6번줄 : 성공했다고 응답.send로 브라우저에게 글자를 보냅니다. 응답.render, 응답.redirect 이런 것도 이용가능합니다. 
+
+
+
+
+
+근데 뭔가 하나의 기능이 빠져있습니다.
+
+4번줄에서 글을 잘 발행했다면...
+
+counter라는 콜렉션 내의 'totalPost'라는 값도 1 증가시켜야하겠는데요?
+
+(totalPost가 총게시물갯수 세는 역할이라면서요.)
+
+그러면 어떻게 하는지 다음 시간에 알아보도록 합시다. 
+
+근데 솔직히 이것도 구글과 함께라면 여러분 충분히 혼자 가능합니다. 

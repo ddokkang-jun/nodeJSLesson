@@ -1,0 +1,208 @@
+13 분
+글 수정 기능 2 : DB 데이터를 수정해보자 (이쯤되면 혼자서도 가능 ㅇㅋ)
+
+
+
+
+0:48 Edit 페이지는 만들었으니 서버 기능개발을 시작합시다
+
+4:26 _id가 무엇인 게시물을 찾아서 수정해야하는가 (폼에서 몰래 데이터 전송하는 법)
+
+11:20 수정요청 후 페이지가 멈추는 이유 : 응답을 안해서 그렇습니다
+
+
+
+
+
+
+/edit으로 PUT요청하면 게시물을 수정해주는 코드를 작성합시다. 
+
+
+
+일단 저번시간 구현한 <form>을 이렇게 수정하면 되겠습니다. 
+
+(edit.ejs)
+
+<form action="/edit?_method=PUT" method="POST">
+  <input 어쩌구>
+</form>
+
+action 속성을 /edit 으로 바꿔주시면 이제 /edit 경로로 PUT 요청이 가능합니다.
+
+그럼 서버는 /edit 경로로 PUT 요청을 했을 때 코드를 작성해주면 되겠군요.
+
+
+(server.js)
+
+app.put('/edit', function(요청, 응답){
+  DB 데이터를 수정해주세요
+});
+
+이렇게 짜면 되는거 아니겠습니까. 정말 눈감고도 하겠군요. 
+
+
+
+DB 데이터를 수정하려면 updateOne을 씁니다
+
+
+(server.js)
+
+app.put('/edit', function(요청, 응답){
+  db.collection('post').updateOne( {_id : ??}, {$set : { 제목 : ??, 날짜 : ?? }}, function(){
+    console.log('수정완료')
+  });
+});
+
+구글 찾아보시면 MongoDB에는 updateOne 이라는 고마운 함수를 쓸 수 있다고 합니다. 
+
+사용법은 updateOne( 1.업데이트할게시물찾기, 2.수정할내용, 3.콜백함수) 라고 합니다. 
+
+일단 1. 업데이트할 게시물을 찾으시려면 저렇게 기존 게시물의 _id 같은걸 작성해주면 되겠습니다. 
+
+2. 그리고 그 게시물을 업데이트하시려면 $set 이런 operator를 사용하시면 되겠습니다. 그러면 기존 값을 수정/추가 해줍니다.
+
+3. 콜백함수는 업데이트 완료시 실행할 코드를 적으면 되겠습니다.  
+
+
+
+
+
+
+?? 물음표 자리에 유저에게 요청받은 데이터를 채워넣어봅시다
+
+
+(server.js)
+
+app.put('/edit', function(요청, 응답){
+  db.collection('post').updateOne( {_id : ??}, {$set : { 제목 : ??, 날짜 : ?? }}, function(){
+    console.log('수정완료')
+  });
+});
+
+{_id : ??} 자리엔 무엇이 들어가야할까요. 당연히 유저가 수정요청한 글번호가 들어가야할 것 같습니다. 
+
+유저가 수정요청한 글번호가 어딨습니까.
+
+아무데도 없는데요 
+
+그래서 하나 만들어주면 될 것 같습니다. 
+
+
+
+
+
+
+
+<form>태그에 몰래 안보이는 <input>을 추가해보도록 합시다. 
+
+
+(edit.ejs)
+
+<form action="/edit?_method=PUT" method="POST">
+  <input value="<%= post._id %>" name="id" style="display : none">
+  나머지 어쩌구~
+</form>
+
+edit 페이지에서 전송버튼을 누르면 input의 value들이 전부 폼으로 전송되는데,
+
+함께 전송될 input을 하나 만들어준 것일 뿐입니다. 
+
+그 input에는 사용자가 수정요청하는 게시물의 _id를 적어주는 것입니다. 
+
+그럼 이제 총 3개의 input 데이터가 서버로 전송됩니다. (제목, 날짜, id)
+
+
+
+
+그럼 서버는 전송된 input 데이터들을 어떻게 알 수 있냐면 ..
+
+예전에 요청.body.title 이런 식으로 쓰면 된다고 배웠죠?
+
+(server.js)
+
+app.put('/edit', function(요청, 응답){
+  db.collection('post').updateOne( {_id : 요청.body.id }, {$set : { 제목 : 요청.body.title , 날짜 : 요청.body.date }}, function(){
+    
+    console.log('수정완료')
+  
+  });
+});
+
+그래서 사용자가 폼전송시 함께 요청한 id를 요청.body.id 이런 식으로 꺼내쓸 수 있습니다. (id라는 단어는 input에 부여한 name 속성입니다.)
+
+그리고 나머지 수정할 데이터 $set 어쩌구 부분의 물음표도 실제 사용자가 요청한 데이터로 채워넣어봤습니다.
+
+
+
+다시 한번 위 코드를 해석하자면 
+
+"사용자가 /edit으로 PUT요청을 하면"
+
+"post라는 콜렉션에 있는 {_id : 요청.body.id } 데이터를 찾아서 { 제목 : 요청.body.title , 날짜 : 요청.body.date } 로 바꿔주세요"
+
+입니다. 
+
+
+
+그리고 마지막 화룡점정으로 parseInt()를 추가해줍니다. 
+
+(server.js) 
+
+app.put('/edit', function(요청, 응답){ 
+  db.collection('post').updateOne( {_id : parseInt(요청.body.id) }, {$set : { 제목 : 요청.body.title , 날짜 : 요청.body.date }}, function(){ 
+    
+      console.log('수정완료') 
+
+  }); 
+}); 
+
+왜냐면 DB에 저장한 _id : ? 는 숫자니까요.
+
+
+
+그리고 마지막 화룡점정2로 응답.redirect()를 추가해줍니다. 
+
+
+
+(server.js) 
+
+app.put('/edit', function(요청, 응답){ 
+  db.collection('post').updateOne( {_id : parseInt(요청.body.id) }, {$set : { 제목 : 요청.body.title , 날짜 : 요청.body.date }}, 
+    function(){ 
+    
+    console.log('수정완료') 
+    응답.redirect('/list') 
+  }); 
+}); 
+
+왜냐면 응답을 안해주면 브라우저가 멈출 수 있으니까요. 성공이든 실패든 응답을 해주어야합니다.
+
+진짜 끝임 수정 잘 되는지 테스트까지 해보십시오. 
+
+
+
+
+나는 이렇게 했다.
+
+(list.ejs)
+
+<button class="btn btn-danger"><a href="/edit/<%= posts[i]._id %>">수정하기</a></button>
+
+수정하기 버튼이 눌리면 라우팅됨
+get요청을 날리는데
+/edit/<%= posts[i]._id %> 되면?하면?
+
+(server.js)
+
+app.get('/edit/:id', function (요청, 응답) {
+  db.collection('post').findOne({ _id: parseInt(요청.params.id) }, function (에러, 결과) {
+    응답.render('edit.ejs', { post: 결과 })
+  })
+});
+app.put('/edit', function (요청, 응답) {
+  db.collection('post').updateOne({ _id: parseInt(요청.body.id) }, { $set: { title: 요청.body.title, date: 요청.body.date } },
+    function (에러, 결과) {
+      console.log('수정완료')
+      응답.redirect('/list')
+    });
+});

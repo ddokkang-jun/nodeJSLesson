@@ -1,0 +1,229 @@
+13 분
+AJAX로 삭제요청하기 1 (HTML 파일 구성)
+
+
+
+
+0:00 뭘 개발할건지 설명
+
+2:48 list.ejs 페이지를 예쁘게 꾸미자
+
+5:30 AJAX가 뭔지 설명 & 기본 문법
+
+
+
+
+
+요청은 4개 종류가 있다고 했습니다. GET POST PUT DELETE
+
+하지만 HTML 폼에서 일반적으로 PUT DELETE 요청을 할 수는 없습니다. 
+
+<form method="DELETE">
+  <button>버튼</button>
+</form>
+
+이런거 안됩니다. 일반적인 HTML 폼 안에선 GET, POST 요청밖에 못날립니다. 
+
+(HTML이라는 언어를 만들 때 잘못 만든 겁니다)
+
+그래서 삭제요청을 할 때 쓸 수 있는 3가지 방법이 있습니다. 
+
+1. method-override 라이브러리의 도움을 받는다
+
+2. AJAX로 DELETE 요청을 날린다 
+
+3. 그냥 POST요청을 날려서 DELETE 작업을 수행한다
+
+
+
+
+우린 2번 방법으로 해보도록 합시다. 
+
+실은 3번이 가장 편합니다. POST로 삭제하라고 요청해도 전혀 상관 없습니다. 
+
+근데 REST한 API를 만들기 위해 1번과 2번을 쓰는 것일 뿐입니다. 
+
+
+
+
+시작하기 전에 일단 list.ejs 페이지를 예쁘게 꾸며보도록 합시다. 
+
+
+있어보이는 HTML이 코드 짜기도 좋다고 했으니
+
+list.ejs 파일을 약간만 다듬고 삭제버튼도 추가해보도록 합시다. 
+
+(list.ejs 요로케 수정)
+
+<ul class="list-group">
+  <% for (var i = 0; i < posts.length; i++){ %>
+  <li class="list-group-item">
+    <h4> 할일 제목 : <%= posts[i].제목 %> </h4>
+    <p> 할일 마감날짜 : <%= posts[i].날짜 %> </p>
+    <button>삭제</button>
+  </li>
+  <% } %>
+</ul>
+
+Bootstrap 홈페이지에 있는 list group 이라는 UI를 그대로 따와서 만든 것입니다.
+
+여러분의 ejs파일도 이렇게 비슷하게 업데이트 해보시고 시작하시면 되겠습니다. 
+
+서버를 띄워봤는데 이상한 에러메세지가 뜬다면 EJS <% %>문법이 잘못된 것이니 잘 살펴보십시오. 
+
+이제 삭제버튼을 누르면 DELETE 요청을 하도록 코드를 짤 것입니다. 
+
+
+
+
+
+
+
+
+
+
+AJAX 는 무엇인가
+
+
+
+실은 별거 아닌데 프론트엔드에서 JavaScript를 이용해 서버에 여러가지 요청을 할 수 있는 문법 같은 것입니다.
+
+장점은 새로고침 없이도 서버에 몰래몰래 요청을 할 수 있습니다. 
+
+그래서 새로고침이 없는 스무스한 사이트를 만들고 싶으면 많은 요청을 AJAX 문법을 이용해 처리하게 됩니다. 
+
+그래서 이걸 써서 개발하면 삭제 버튼을 누르는 순간 새로고침 없이도 글 삭제가 가능합니다. 
+
+개멋있겠죠? 
+
+
+
+
+
+AJAX를 쓰기 위한 jQuery 설치
+
+
+
+쌩 자바스크립트로도 AJAX가 가능하지만 코드가 길어서 정신건강을 위해 jQuery를 설치합니다. 
+
+실은 근데 이미 설치가 되어있습니다. 
+
+여러분 list.ejs 파일에 Bootstrap이 정상적으로 설치가 잘 되었다면
+
+이런 코드를 발견하실 수 있습니다. 
+
+
+
+(list.ejs 하단)
+
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="어쩌구" crossorigin="어쩌구" ></script>
+이 코드가 바로 jQuery를 CDN 방식으로 설치하는 부분이라고 보시면 되겠습니다.
+
+(CDN은 다른 사이트에서 호스팅해주는 jquery 파일을 내 HTML에 적용해주세요~ 라는 뜻입니다.)
+
+하지만 그냥 쓸 순 없습니다. jQuery Slim 버전인데 이걸가지고 AJAX요청이 불가능합니다.
+
+빨리 이 부분을 이렇게 수정합니다. 
+
+
+
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+1. slim이라는 글자를 지우고 2. 뒤에 있는 이상한 긴 글자들을 제거합니다.
+
+이렇게 써주셔야 정상적으로 AJAX 기능이 들어있는 jQuery 라이브러리를 설치할 수 있습니다.
+
+이제 이거 하단에 코드 이렇게 짤겁니다.
+
+
+
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+
+<script>
+  서버에 AJAX DELETE요청 날려주세요~
+</script>
+알겠쥬?
+
+(주의) jQuery 설치 파일보다 하단에 script 태그를 열어서 작성하셔야 잘 작동됩니다. 
+
+이거 안지키고 에러난다고 그러면 답안해줌 
+
+
+
+
+
+AJAX 기본 문법
+
+
+
+이렇게 치십시오.
+
+(list.ejs 하단)
+
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+
+<script>
+  $.ajax({
+    method : 'POST',
+    url : '/add',
+    data : '결혼하기'
+  })
+</script>
+
+지금 뭘 쓴거냐면.. /add 경로로 POST 요청을 하는데 요청과 함께 '결혼하기' 라는 데이터를 보내주세요~ 라는 것입니다.
+
+그럼 서버는 요청을 처리해줍니다. 이게 AJAX 기본 문법 끝입니다.
+
+이 코드는 언제 실행되냐면.. script 태그 안에 그대로 넣으시면 list.ejs 페이지를 방문할 때 마다 바로 실행됩니다. 
+
+근데 새로고침 현상이 없으니 요청이 성공한지 실패한지 전혀 모르죠?
+
+
+
+
+그래서 완성형 문법을 공개합니다. 이렇게 치십시오.
+
+(list.ejs 하단)
+
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+
+<script>
+  $.ajax({
+    method : 'DELETE',
+    url : '/delete',
+    data : '1번게시물'
+  }).done(function(결과){
+    AJAX 성공시 실행할 코드는 여기
+  }).fail(function(에러){
+    실패시 실행할 코드는 여기
+  });
+</script>
+
+/add 경로로 POST 요청을 하는데 요청과 함께 '1번게시물' 이라는 데이터를 보내주세요~ 라고 썼습니다.
+
+그리고 뒤에 .done .fail 이런 함수들을 붙여서 쓰실 수 있는데 
+
+각각 설명은 위에 한글로 잘 나와있군요. 
+
+AJAX가 필요할 때마다 이거 그대로 복붙해서 쓰시면 됩니다.
+
+
+
+
+
+그럼 서버는 이런 코드를 작성하면 삭제기능이 완성되지 않을까여
+
+
+(server.js)
+
+app.delete('/delete', function(요청, 응답){
+  DB에서 글 삭제해주쇼
+  응답.send('삭제완료')
+});
+
+어떤 사람이 /delete경로로 DELETE 요청을 하면 ~~해주세요 라고 코드를 짰습니다.
+
+안에는 어떤 내용이 들어가야할까요?
+
+아마 "DB에서 글삭제해주세요~"가 아닐까여?
+
+그럼 다음시간에 완성시켜보도록 합시다. 

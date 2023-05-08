@@ -1,0 +1,174 @@
+13 분
+(쉬어가기) Bootstrap 디자인 넣기 & HTML 조립식 개발하기
+
+
+
+
+주요내용 요약 :
+
+navbar를 수정할때 모든 html을 수정해야하는 번거로움 해결하기
+
+- views폴더에 다가 index.html파일을 index.ejs바꾸고 넣기
+- write.ejs도 넣기
+
+server.js 에서 
+
+app.get('/write', function (request, response) {
+  response.render('write.ejs');
+});
+
+와 같이 코드 변경하기
+
+- 그리고 css 관련된 설명 
+
+
+
+
+0:00 detail.ejs 파일 눈버리지 않을 정도로 디자인 넣기
+
+3:20 CSS파일 넣는 법
+
+6:48 list.ejs 디자인 넣기
+
+8:26 페이지마다 자주 출현하는 Navbar 조립식으로 첨부하기
+
+
+
+
+잠깐 쉬어가며 HTML 디자인좀 넣어봅시다
+
+
+
+공부용 예제라고 HTML에 디자인없이 글만 넣으면 코드짤 맛이 나지 않습니다. 
+
+그러니 같이 list, detail 페이지를 꾸며보도록 합시다. 
+
+일단 detail.ejs 코드를 이렇게 업데이트 했습니다 .
+
+(이전 detail.ejs)
+<h4><%= data.제목 %></h4>
+<h4><%= data.날짜 %></h4>
+
+(현재 detail.ejs)
+<div class="container mt-3">
+  <div class="card" style="width: 100%">
+    <div class="card-body">
+      <h5 class="card-title"><%= data.제목 %></h5>
+      <h6 class="card-subtitle mb-2 text-muted"><%= data.날짜 %></h6>
+      <p class="card-text">임시내용입니다.</p>
+      <a href="#" class="card-link">수정하기</a>
+    </div>
+  </div>
+</div>
+
+Bootstrap 홈페이지에 있는 카드 레이아웃 아무거나 가져다 붙여놓고 안에 EJS문법으로 실제 제목을 채웠습니다.
+
+이제 더 이상 눈이 썩지 않습니다. 
+
+container라는 클래스는 Bootstrap에서 좌우 여백을 예쁘게 잡을 수 있게 도와주는 클래스입니다. 
+
+
+
+
+CSS 파일 넣는 법
+
+
+CSS 파일은 보통 관습적으로 public 폴더에 보관합니다. 
+
+CSS, 이미지 처럼 자주 바뀌지 않는 static 파일들을 다 public에 넣어주시면 됩니다.
+
+(public 폴더는 views 폴더 옆에 나란하게 만드세요)
+
+그리고 원하는 HTML이나 EJS파일에 가서 
+
+<head>
+  <link href="/public/님들이만든CSS파일.css" rel="stylesheet">
+</head>
+<head>태그 안에 <link>로 CSS를 집어넣으면 됩니다. (이건 당연한 사실)
+
+
+하지만 그냥 넣으시면 동작하지 않습니다.
+
+Node쨩에게 "나는 public 폴더도 있다"라고 알려주어야합니다. 
+
+
+(server.js)
+
+app.use('/public', express.static('public'))
+
+이라는 코드를 app.set이나 app.use가 모여있는 곳 근처에 적어주시면 됩니다.(코드추가) 
+
+"/public 위치에 있는 폴더를 쓰겠다"라는 뜻입니다. 
+
+
+
+list.ejs 파일 디자인하기
+
+
+
+별거 한건 없고 버튼들을 Bootstrap 버튼들로 바꿔서 집어넣었으며
+
+글자 가운데 정렬을 조금 해주고 마진 잡고 container 클래스를 활용해 좌우여백을 예쁘게 잡았을 뿐입니다. 
+
+자세한 사항은 강의를 참고합니다. 
+
+
+
+
+
+<nav> 조립식으로 첨부하기
+
+
+페이지가 4개 정도 있는데 여기 <nav>태그로 이루어진 상단메뉴UI가 계속 출현하고 있습니다. 
+
+이 UI는 전부 똑같은 모습을 하고 있어야하는데, 그럼 나중에 수정사항이 생기면
+
+페이지4개에 있는 <nav> 직접 하나하나 수정해줄겁니까. 그럼 너무 오래걸리잖아요.
+
+1. 그래서 nav.html이라는 파일을 하나 만들고 2. 그 파일을 다른 파일에다가 include(첨부) 하는 식으로 한번 UI를 만들어보겠습니다. 
+
+
+
+1. list.ejs에 있던 <nav>태그를 잘라내어 nav.html 파일을 만들고 거기에 붙여넣습니다.
+
+(views/nav.html)
+
+<nav>
+  <a>링크</a>
+  어쩌구...
+  저쩌구...
+</nav>
+
+views 폴더 내에 만드시면 될듯 합니다.
+
+
+
+2. <nav>태그 UI가 필요한 파일에 가서 이런 문법을 사용합니다.
+
+(list.ejs)
+
+<%- include('nav.html') %>
+이 문법을 쓰시면 이 자리에 nav.html 내용이 전부 붙여넣기됩니다. 
+그럼 list 페이지 방문하시면 nav태그가 잘 보이죠?
+
+다른 ejs 파일들에도 nav.html을 조립식으로 첨부해보시길 바랍니다. 
+
+
+
+
+index.html에도 필요한데 어쩌죠
+
+
+EJS 파일 말고 그냥 쌩 HTML 파일엔 <% %> 이런 문법을 쓸 수 없습니다. (EJS문법이니까 당연)
+
+그럼 HTML 파일을 .ejs 파일로 바꾸시면 되죠 뭐..!
+
+1. 확장자를 index.ejs로 바꾸고
+
+2. 이걸 views폴더 내로 옮기고
+
+3. server.js에서 /경로로 방문시 index.html을 보내라~가 아니라 index.ejs 파일을 렌더링해줘라~ 라고 바꾸면 되겠죠?
+
+
+
+그럼 <% %> 문법을 자유롭게 쓸 수 있겠군요. 

@@ -1,0 +1,162 @@
+12 분
+게시물마다 번호 달기 2 : DB Update 함수와 inc 연산자
+
+
+
+
+
+- 이전 강의의 코드를 계속 이어서 작성해 나가자.
+
+- 아래의 코드를 한줄씩 해설 :  
+
+1. 누군가가(사용자) write페이지에서 submit 버튼을 눌러서 /add 로 post요청을 하면
+2. DB.counter 내의 name이 "게시물 총갯수"를 찾기 시작함 
+3. 찾으면 현재 0값인 결과.totalPost를 var 총게시물갯수 에 저장함
+4. 이제 DB.post 로 가서
+5. 새 게시물을 기록함 = insertOne을 수행함 = _id 에 유니크한 값을 줌. 유니크해 봣자 0,1,2,3 이런 숫자임. 근데 중요함.
+6. counter 컬렉션에 있는 totalPost 라는 항목도 1 증가시켜줌
+
+
+
+app.post('/add', function (요청, 응답) {
+  db.collection('counter').findOne({ name: '게시물 총갯수' }, function (에러, 결과) {
+    var 총게시물갯수 = 결과.totalPost;
+
+    db.collection('post')
+    .insertOne({ _id: 총게시물갯수 + 1, 제목: 요청.body.title, 날짜: 요청.body.date }, function (에러, 결과) {
+      db.collection('counter').updateOne({ name: "게시물 총갯수" }, { $inc: { totalPost: 1 } }, function (에러, 결과) {
+        if(에러){return console.log(에러)}
+      });
+    });
+  });
+
+  응답.send('전송완료');
+});
+
+
+
+
+
+TMI :
+
+-updateOne
+db.collection.('counter').updateOne({어떤데이터를 수정할지},{수정값},function(){});
+
+-updateMany
+(한번에 많은 데이터를 수정할때)
+db.collection.('counter').updateMany({어떤데이터를 수정할지},{수정값},function(){});
+
+
+-$set: {totalPost:바꿀 값}
+-$set: {totalPost:100} 
+$set은 연산자임 : 값을 아예 변경할때 쓰임. 
+
+-$inc: {totalPost:기존값에 더해줄 값}
+
+다른 연산자들 : 
+$inc(증가), 
+$min(기존값보다 적을때만 변경), 
+$rename(key값 이름변경)
+
+
+
+
+
+
+
+0:00 updateOne 이라는 함수로 DB 데이터 수정하는 법 
+
+7:22 여태까지 짰던 글 발행기능 다시 한글로 총정리  
+
+9:30 글발행 기능 테스트 (post에 글이 추가되는지, counter에 1이 증가되는지)
+
+
+
+
+
+
+
+DB 데이터를 수정하고 싶으면 updateOne을 쓰시면 됩니다. 
+
+
+counter라는 콜렉션 내의 자료를 수정하고 싶으면 이렇게 하시면 됩니다. 
+
+db.collection('counter').updateOne( {요런 이름의 자료를} , {이렇게 수정해주세요} , function(에러, 결과){
+  console.log('수정완료')
+})
+updateOne 함수엔 파라미터가 세개가 필요합니다. 
+
+왼쪽엔 { name : '게시물갯수' } 이렇게 자료를 찾을 수 있는 이름이라든지 쿼리문을 적어주면 됩니다. 
+
+
+
+
+가운데는 여러분이 수정할 값을 입력해주시면 됩니다. 그런데 약간 특이합니다. 
+
+{ $set : { totalPost : 100 } } 이렇게 넣어서 값을 아예 100으로 변경할 수도 있고
+
+{ $inc : { totalPost : 5 } } 이렇게 넣어서 값을 5만큼 더해줄 수도 있습니다. 
+
+$ 표시 붙은게 바로 operator 라는 문법입니다. 여러 종류가 있으니 나머지는 필요할 때 찾아쓰도록 합시다. 
+
+
+오른쪽은 그냥 콜백함수입니다. 수정이 실패나 성공시 실행할 코드를 안에 담으시면 됩니다. 
+
+
+
+
+
+
+그럼 데이터를 1 증가시키려면 이렇게 하면 되겠군요.
+
+
+
+
+▲ 위의 totalPost라는 데이터를 1 증가시켜봅시다. 
+
+
+db.collection('counter').updateOne( {name : '게시물갯수' } , { $inc : { totalPost : 1 } } , function(에러, 결과){
+  console.log('수정완료')
+})
+
+이 코드를 실행하면 totalPost라는 항목이 1 증가합니다. 끝!
+
+
+
+
+
+
+
+이 코드를 언제 실행시켜야합니까
+
+
+언제겠습니까. 글을 하나 발행할 때 아니겠습니까. 
+
+app.post('/add', function (요청, 응답) {
+  db.collection('counter').findOne({name : '게시물갯수'}, function(에러, 결과){
+    var 총게시물갯수 = 결과.totalPost
+
+    db.collection('post').insertOne({ _id : 총게시물갯수 + 1, 제목 : 요청.body.title, 날짜 : 요청.body.date }, function (에러, 결과) {
+      db.collection('counter').updateOne({name:'게시물갯수'},{ $inc: {totalPost:1} },function(에러, 결과){
+	if(에러){return console.log(에러)}
+        응답.send('전송완료');
+      })
+    })
+
+  })
+})
+
+이렇게 글 발행해주는 코드 안에 뿅하고 집어넣어주시면 되겠습니다.
+
+
+이 긴 코드를 읽고 해석하려는 시도는 안하는게 좋습니다. 남의 코드 읽고 해석하는게 가장 어렵습니다. 
+
+참고해서 여러분 코드를 완성시키면서 이해하시면 되겠습니다. 
+
+굳이 읽으시려면 한줄한줄 한글로 해석하면서 읽어보시길 바랍니다. 단어하나 놓치지 말고 전부 다 한글로 번역해보세요.
+
+
+한글로 설명할 수 없는 코드가 있다면 큰 문제입니다. 다음 강의 듣는 것 보다 이전 강의 복습 잘해보시면 되겠습니다. 
+
+
+다음 강의에서 데이터 수정, 삭제를 배워보자

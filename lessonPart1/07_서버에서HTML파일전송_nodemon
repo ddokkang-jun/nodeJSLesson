@@ -1,0 +1,186 @@
+서버에서 HTML 파일전송해보기 & Nodemon으로 자동화
+
+
+
+
+0:50 저번시간 숙제 (/beauty로 접속하면~)
+
+2:20 서버 껐다가 켜는 작업 자동화시키기 (nodemon 설치) 
+
+4:02 nodemon 실행시 PowerShell 보안오류가 뜨면?
+
+5:50 Get요청 업그레이드 : 접속시 HTML 파일 보내주기 
+
+
+
+
+
+이전 시간 숙제는 /beauty 로 GET요청이 들어오면 beauty 페이지를 보여주는게 숙제였다.
+
+
+(server.js)
+const express = require('express');
+const app = express();
+app.listen(8080,function(){
+  console.log('8080 으로 누가 들어옴~');
+})
+
+app.get('/pet', function(요청, 응답){
+  응답.send("펫용품 쇼핑할 수 있는 페이지입니다.")
+})
+
+app.get('/beauty', function(요청, 응답){
+  응답.send("beauty 용품 쇼핑할 수 있는 페이지입니다.")
+})
+
+얼마든지 만들어도 상관이 없다는 점.
+
+
+
+
+
+
+이번시간에는
+
+서버를 껐다 키기 너무 귀찮으니 "nodemon 설치"를 해서 이 반복되는 일을 자동화 해보자. 
+
+
+
+TMI: 
+nodemon은 라이브러리다.
+
+
+
+
+터미널 켜신 다음 
+
+npm install -g nodemon 
+
+입력하시면 됩니다.
+
+yarn 으로 설치가 잘된다는 분들은 yarn add global nodemon 입력하시면 됩니다.
+
+
+Q. yarn으로 설치하면 yarn이 없다고 나오는데 왜그런가요?
+
+A. 당연히 이전 강의 튜토리얼 보시고 yarn 설치하셔야 npm 대신 yarn 사용할 수 있습니다.
+
+
+
+
+
+설치가 잘 되었다면 이제 서버를 실행할 때 
+
+nodemon server.js
+
+라고 입력해주시면 되겠습니다.
+
+
+
+
+Q. 설치가 안되고 보안 오류라는 메세지가 뜬다?
+A. 
+- 윈도우에서 "PowerShell을 검색"한 다음 "마우스 우클릭"하고 "관리자 권한으로 실행"한다.
+- PowerShell에 다가 executionpolicy 라고 치고 엔터누른다.
+- 그러면 오류가 있는 경우 Restricted 라고 알려준다.
+- 그 다음 set-executionpolicy unrestricted 라고 친다.
+- 실행 규칙 변경할 수 있도록 물어보는데 : y + 엔터 
+- 이제 nodemon server.js 를 쳐본다. 잘되면 끝.
+
+
+
+
+
+
+그럼 파일 변경, 저장할 때 마다 이제 지가 알아서 서버를 새로 시작해줍니다. 
+
+(하지만 브라우저에서 새로고침은 하셔야합니다.)
+
+PowerShell 등에서 보안오류 이런게 뜬다면 강의 영상을 참고해서 고치시길 바랍니다. 
+
+다른 에러가 뜬다면 yarn으로 설치 다시 한번 해보시고 안되면 에러메세지를 구글에 검색해보도록 합시다. 
+
+
+
+
+
+
+이번에는
+
+GET 요청시 HTML 파일을 보내주도록 합시다. 
+
+
+누군가 /pet 방문시 안내메세지만 달랑 띄우는건 너무 없어보이니
+
+HTML 파일을 보내주도록 합시다. 
+
+
+Q. HTML 파일이 뭔가요?
+
+A. 웹페이지를 구성하는 언어가 바로 HTML이고 그 언어로 그림 넣고 글씨 쓰고 해서 예쁘게 꾸민 파일입니다. 
+
+
+일단 HTML 파일을 작성해보도록 합시다. 
+
+
+(server.js랑 같은 폴더에 index.html 생성 후 작성)
+
+<!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+  </head>
+  <body>
+    <h4>안녕하세요 홈페이지입니다.</h4>
+  </body>
+</html>
+
+
+
+(server.js)
+const express = require('express');
+const app = express();
+app.listen(8080,function(){
+  console.log('8080 으로 누가 들어옴~');
+})
+
+app.get('/pet', function(요청, 응답){
+  응답.send("펫용품 쇼핑할 수 있는 페이지입니다.")
+})
+
+app.get('/beauty', function(요청, 응답){
+  응답.send("beauty 용품 쇼핑할 수 있는 페이지입니다.")
+})
+
+app.get('/', function(요청, 응답){
+  응답.send("beauty 용품 쇼핑할 수 있는 페이지입니다.")
+})
+
+app.get('/', function(요청, 응답) { 
+  응답.sendFile(__dirname +'/index.html')
+});
+
+
+
+이렇게 server.js에 코드를 작성해두면
+
+누군가 "/" 경로 즉 home화면에 접속했을 경우 index.html 파일을 받게되고 자연스레 보게 됨.
+
+
+그럼 누군가 / 경로로 접속시 (/ 하나만 있으면 홈페이지입니다)
+
+server.js랑 같은 경로에 있는 /index.html 이라는 파일을 보내줍니다. 
+
+- sendFile() 함수를 쓰면 파일을 보낼 수 있습니다
+
+- __dirname은 현재 파일의 경로를 뜻합니다.
+
+
+
+
+이것도 역시 이해고 자시고 그냥 외워서 사용하시면 되겠습니다. 
+
+에러가 난다면 99% 확률로 오타입니다. dirname 왼쪽에 언더바 두개입니다. 

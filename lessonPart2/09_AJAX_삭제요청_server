@@ -1,0 +1,264 @@
+17 분
+AJAX로 삭제요청하기 2 (서버는 뭘해야하나)
+
+
+
+
+0:00 deleteOne 함수 써서 DB 데이터 삭제하기
+
+4:17 삭제하라고 했는데 왜 삭제가 안되는 것? (parseInt)
+
+7:33 버튼을 누를 때만 삭제 AJAX 요청을 해보자 
+
+9:25 3번글 삭제버튼을 누르면 3번 게시물을 삭제하는 법 
+
+
+
+
+
+
+게시물 번호를 보내려면 어떻게 합니까
+
+
+AJAX로 DELETE 요청시 가장 중요한 내용이 있습니다.
+
+여러분이 원하는 게시물을 삭제하고 싶으면 AJAX요청을 할 때
+
+삭제 원하는 게시물 번호를 보내십시오. 
+
+(게시물 번호는 우리가 예전에 _id : 1 뭐 이런식으로 DB에 저장해놨응게 그걸 보내십쇼)
+
+
+(list.ejs)
+
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+
+<script>
+  $.ajax({
+    method : 'DELETE',
+    url : '/delete',
+    data : { _id : 1 }
+  }).done(function(결과){
+    AJAX 성공시 실행할 코드는 여기
+  })
+</script>
+
+data : {} 부분에 삭제를 원하는 게시물 아이디를 적어 보내면 좋을 것 같습니다.
+
+지금은 테스트해야하니 대충 _id : 1이라고 적어봅시다. 
+
+
+
+
+
+
+그럼 서버는 어떤 코드를 짜야 게시물이 삭제될까
+
+
+이런 코드가 아닐까요. 빨리칩시다. 
+
+(server.js)
+
+app.delete('/delete', function(요청, 응답){
+  db.collection('post').deleteOne(요청.body, function(에러, 결과){
+    console.log('삭제완료')
+  })
+  응답.send('삭제완료')
+});
+
+deleteOne 함수를 쓰면 원하는 데이터를 삭제 가능합니다.
+
+deleteOne(삭제원하는 데이터이름, function(){} ) 이렇게 쓰시면 됩니다. 
+
+그리고 AJAX요청시 data : { _id : 1 } 이라고 적은 정보는 요청.body라는 곳에 담겨옵니다.
+
+그래서 그 정보를 그대로 deleteOne에 집어넣으면 { _id : 1 }이라는 게시물을 삭제할 수 있겠죠? 
+
+
+
+근데 삭제가 안됩니다요
+
+
+(원래 잘 안될 때 deleteOne 콜백함수 내 에러나 결과라는 파라미터를 출력해보시면 됩니다.)
+
+삭제가 안되는 이유는 당연히 deleteOne 내에 잘못된 데이터를 집어넣어서가 아닐까요? 
+
+대충 출력해보니 DB에 저장된 { _id : 1 } 이라는 아이디는 숫자고
+
+AJAX로 보낸 데이터를 (요청.body) 출력해보면 { _id : '1' } 이렇게 문자입니다. 
+
+
+
+Q. 전 분명 AJAX코드에서 { _id : 1 }를 보냈는데 왜 바뀌어있죠?
+
+AJAX요청 등으로 데이터를 서버에 전송할 때 숫자 자료들이 가끔 문자화 되는 경우가 있습니다.
+
+그래서 사기행위에 당황하지 마시고 이걸 다시 숫자로 바꿔주셔야합니다.
+
+
+
+(server.js)
+
+app.delete('/delete', function(요청, 응답){
+  요청.body._id = parseInt(요청.body._id)
+  db.collection('post').deleteOne(요청.body, function(에러, 결과){
+    console.log('삭제완료')
+  })
+  응답.send('삭제완료')
+});
+
+parseInt라는 함수는 '1' 이런걸 정수 1로 바꿔주는 고마운 함수입니다. 
+
+그리고 실행해보시면 (/list 페이지를 새로고침해서 AJAX 요청해보시면)
+
+{_id : 1} 인 데이터가 삭제가 되어있음을 확인할 수 있습니다.
+
+
+
+
+
+
+버튼을 눌렀을 때만 AJAX 요청을 해보도록 합시다. 
+
+
+
+지금은 /list 페이지를 로드할 때마다 AJAX 요청이 실행됩니다.
+
+<script>태그 안에 담은 코드들은 페이지 로드할 때마다 실행되니깐요.
+
+코드를 이렇게 고치면.. 
+
+
+
+(list.ejs)
+
+<ul class="list-group">
+  <% for (var i = 0; i < posts.length; i++){ %>
+  <li class="list-group-item">
+    <h4> 할일 제목 : <%= posts[i].제목 %> </h4>
+    <p> 할일 마감날짜 : <%= posts[i].날짜 %> </p>
+    <button class="delete">삭제</button>
+  </li>
+  <% } %>
+</ul>
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+
+<script>
+  $('.delete').click(function(){
+    $.ajax({
+      method : 'DELETE',
+      url : '/delete',
+      data : { _id : 1 }
+    }).done(function(결과){
+      //AJAX 성공시 실행할 코드는 여기
+    })
+
+  });
+</script>
+
+1. <button>태그에 class를 추가했고 
+
+2. $.ajax 코드를 이상한 코드로 감쌌습니다. 
+
+이상한 코드의 뜻은.. delete라는 클래스명을 가진 요소를 클릭하면 내부 $.ajax(~) 코드를 실행해주세요~ 입니다. (jQuery 문법입니다.)
+
+그래서 이제 delete라는 클래스명을 가진 버튼을 클릭할 때만 ajax를 실행시켜주네요!
+
+
+
+
+
+
+근데 왜 항상 1번글만 삭제해주죠?
+
+
+우리가 AJAX 요청할 때마다 1번만 삭제하기 코드를 짰으니까 그렇지 않을까요. (제탓은 아님)
+
+그럼 코드를 수정해봅시다. 
+
+
+(list.ejs)
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+
+<script>
+  $('.delete').click(function(){
+    $.ajax({
+      method : 'DELETE',
+      url : '/delete',
+      data : { _id : 지금 클릭한 삭제버튼의 글번호 }
+    }).done(function(결과){
+      //AJAX 성공시 실행할 코드는 여기
+    })
+  });
+</script>
+
+{_id : 1} 이라고 하드코딩하는게 아니라 지금 누른 삭제버튼의 번호?를 집어넣으면 되겠군요. 
+
+그럼 버튼마다 미리 번호를 달아줘야하지 않을까요? 버튼에 자연적으로 번호가 생기진 않잖아요. 
+
+
+
+
+코드를 또 수정해봅시다. 
+
+<ul class="list-group">
+  <% for (var i = 0; i < posts.length; i++){ %>
+  <li class="list-group-item">
+    <h4> 할일 제목 : <%= posts[i].제목 %> </h4>
+    <p> 할일 마감날짜 : <%= posts[i].날짜 %> </p>
+    <button class="delete" data-id="<%= posts[i]._id %>">삭제</button>
+  </li>
+  <% } %>
+</ul>
+
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+
+<script>
+  $('.delete').click(function(e){
+    $.ajax({
+      method : 'DELETE',
+      url : '/delete',
+      data : { _id : e.target.dataset.id }
+    }).done(function(결과){
+      //AJAX 성공시 실행할 코드는 여기
+    })
+  });
+</script>
+
+1. <button>태그에 data-id라는 속성을 추가했으며
+
+2. data : { } 부분을 변경했습니다. 
+
+
+빠른 해설 들어갑니다. 
+
+1. HTML요소에는 data-id="1" 이런 식으로 몰래 정보를 슬쩍넣을 수 있습니다. 몰랐죠?
+
+여기에 posts[i]._id 라는 게시글의 번호를 EJS문법을 이용해 집어넣었을 뿐입니다.
+
+
+2. 그리고 자바스크립트로 버튼에 숨겨져있는 data-id="1" 이라는 정보를 가져올 수 있습니다.
+
+버튼요소.dataset.id 이런식입니다.
+
+
+3. e.target 이라는 코드는 현재 지금 클릭한 요소를 뜻합니다. 
+
+그래서 e.target.dataset.id는 무슨 뜻일까여?
+
+뭐게요
+
+그래서
+
+2번글 버튼을 누르면 data : { _id : 2 } 라고 채워지게되는 것입니다.
+
+3번글 버튼을 누르면 data : { _id : 3 } 이라고 채워지게되는 것입니다.
+
+
+
+
+이제 3번글 삭제버튼을 누르면 3번 게시물을 삭제해줍니다. 
+
+끝입니다.
+
+하지만 새로고침을 해야 반영이 되죠? 다음 시간엔 이걸 수정하는 UI 개발을 해보도록 합시다. 

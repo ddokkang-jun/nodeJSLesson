@@ -1,0 +1,190 @@
+Database에 자료 저장하는 법 (한줄이면 끝)
+
+MongoDB collection & insert
+
+
+
+
+
+
+0:00 MongoDB 함수들 에러처리 방법
+
+1:13 데이터를 저장하기위한 database, collection 공간만들기
+
+2:55 server.js에 코드를 끄적여 DB에 데이터 저장해보기  
+
+9:44 오늘의 숙제 
+
+
+
+
+
+자료를 저장하기 위해선 일단 MongoDB에 저장할 폴더와 파일을 만드세요
+
+
+여러분이 저번시간까지 접속 URL 길게 적어서 쓴건
+
+여러분 계정에 접속하는 것이었고,
+
+이제는 여러분 계정 안에 있는 여러가지 database와 collection에 자료를 저장할 것입니다.
+
+우린 database 이런게 없으니까 하나 강제로 만들어보도록 합시다.
+
+
+
+
+database/ collection 만들기 
+
+
+1. MongoDB Atlas 메인 대시보드에서 Collections 라는 버튼을 누르도록 합시다. 
+< 화면 왼쪽 상단 Database 클릭
+< Cluster 클릭
+< Collections 탭 클릭
+< Add my own data 버튼 클릭
+< Database name : todoapp, Collection name: post 라고 이름을 지어준다.
+< todoapp < post 를 볼 수 있다. 여기에서 데이터가 저장된다.
+
+
+▼ 2. 이번엔 Add my own data 버튼을 누르도록 합시다. (혹은 이미 뭐가 있다면 "create database" 클릭)
+
+
+
+▼ 3. database 이름, collection 이름을 예쁘게 하나씩 정해서 create 누릅시다. 
+
+
+
+
+저는 database 이름은 todoapp,
+
+collection 이름은 post 라고 지었습니다.
+
+
+
+database는 하나의 폴더, collection은 하나의 엑셀파일이라고 생각하면 대충 맞습니다.
+
+
+
+
+
+이제 server.js 아무데나 코드를 짜서 db와 통신해보도록 합시다. 
+
+(실은 아무데나는 아니고 const 어쩌구 많은 곳 밑에 쓰셔야합니다.)
+
+var db;
+MongoClient.connect('접속URL', { useUnifiedTopology: true }, function (에러, client) {
+	if (에러) return console.log(에러)
+	db = client.db('todoapp');
+
+	app.listen(8080, function () {
+		console.log('listening on 8080')
+	});
+});
+
+(둘째줄에 { useUnifiedTopology: true } 이건 쓰면 좋습니다. 워닝메세지를 제거해줍니다.)
+
+이렇게 여러분 코드를 바꿔주시면 됩니다. 첫줄과 넷째줄에 코드가 추가되었죠?
+
+var db;로 페이지 전체에서 쓸 수 있는 전역 변수를 하나 만들고,
+
+그리고 client.db('todoapp') 이라는 이상한 함수로 todoapp 이라는 database 에 접속해주세요~라는 명령을 내렸습니다.
+
+
+
+
+
+collection에 자료 하나 추가하는 법 
+
+
+세줄만 쓰시면 아까 만든 collection에 내가 원하는 자료를 추가해볼 수 있습니다.
+
+
+
+
+var db;
+MongoClient.connect('접속URL', { useUnifiedTopology: true }, function (에러, client) {
+  if (에러) return console.log(에러)
+  db = client.db('todoapp');
+
+  db.collection('post').insertOne( {이름 : 'John', _id : 100} , function(에러, 결과){
+    console.log('저장완료'); 
+  });
+
+  app.listen(8080, function () {
+    console.log('listening on 8080')
+  });
+});
+
+
+
+중간에 세줄이 추가되었습니다. DB에 자료 추가할 일이 있을 때마다 저거 세줄 쓰면 됩니다.
+
+db.collection('post') 라는건 collection 중에 post 라는걸 선택한다는 뜻이고
+
+뒤에 insertOne을 붙이시면 자료를 추가할 수 있습니다. (Object 자료형식으로 추가가능)
+
+그리고 insertOne 함수는 insertOne(추가할 자료, 콜백함수) 이렇게 쓰면 되겠습니다.
+
+
+
+db.collection('post').insertOne() 
+이 패턴 잘 기억합시다. 
+
+나중에 데이터 추가하고 삭제하고 수정할 때도 이거와 동일한 형식으로 쓸 거니까요.
+
+
+
+
+
+(참고) 뭔가 안된다면 접속 URL 복붙할 때
+
+mongodb+srv://디비계정아이디:디비계정패스워드@어쩌구/데이터베이스이름?retryWrites=true&w=majority
+
+위 처럼 데이터베이스 이름까지 넣어야 잘되는 경우도 간혹 있습니다.
+
+
+
+
+
+_id 라는건 왜 붙이죠?
+
+
+mongoDB에선 자료들을 서로 구분하기 위해 _id가 꼭 있어야합니다.
+
+일종의 출석번호라고 생각하시면 됩니다.
+
+이걸 직접 집어넣으셔야 하는데
+
+안집어넣으시면 알아서 하나 만들어줍니다.
+
+_id : 어쩌구 이런 식으로 유니크한 아이디를 하나 자동으로 부여해줍니다.
+
+
+
+근데 저런 이상한 문자들 보기싫으니까 보통 번호붙여 저장을 합니다.
+
+_id : 1
+
+_id : 2
+
+_id : 3
+
+이렇게 저장하는 자료들에 항상 유니크한 출석번호를 붙여서 저장을 하는게 좋습니다. 
+
+나중에 번호 붙이는 법에 대해 알아봅시다.
+
+
+
+
+숙제 : 누군가 /add로 POST 요청을 하면 폼에 입력된 자료를 2개가 서버로 도착합니다.
+
+이 때 자료 2개를 post라는 이름의 collection에 저장해보도록 합시다.
+
+{ 제목 : '어쩌구', 날짜 : '어쩌구' } 이런 Object 자료형으로 저장하시면 되겠습니다.
+
+// post
+app.post('/add', function (요청, 응답) {
+  db.collection('post').insertOne(요청.body, function (에러, 결과) {
+    console.log("저장완료");
+  });
+  응답.send('전송완료')
+});

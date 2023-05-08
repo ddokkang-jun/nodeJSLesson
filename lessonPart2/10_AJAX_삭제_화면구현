@@ -1,0 +1,180 @@
+AJAX로 삭제요청하기 3 (jQuery를 이용한 UI 기능) & 여러가지 응답방법
+
+
+
+0:00 서버가 요청에 응답할 수 있는 여러가지 방법 
+
+4:40 삭제요청 성공시 HTML을 조작해서 삭제된 것 처럼 보이게 만들자 (jQuery) 
+
+
+
+
+
+고객 요청에 응답하는 방법은 여러가지가 있습니다
+
+
+app.get('/어쩌구', function(요청, 응답){
+  응답.send('<p>some html</p>')
+  응답.status(404).send('Sorry, we cannot find that!')
+  응답.sendFile('/uploads/logo.png')
+  응답.render('list.ejs', { ejs에 보낼 데이터 })
+  응답.json(제이슨데이터)
+});
+
+send는 간단한 문자나 HTML을 보낼 수 있습니다. 
+
+status는 응답코드를 보낼 수 있습니다. 
+
+sendFile은 static 파일들을 보낼 수 있습니다. 
+
+render는 ejs등의 템플릿이 적용된 페이지들을 렌더링해줄 수 있습니다. 
+
+json은 제이슨 데이터를 담아보낼 수 있습니다. 
+
+
+
+
+
+응답코드를 이용해 요청이 성공했는지, 실패했는지 판정해줄 수 있습니다
+
+
+
+
+대충 서버에러일 경우엔 500, 이상한 요청일 경우 400 이렇게 대충 적어보내셔도 무방하지만 
+
+정확히 적으시면 테스트할 때 어떤 문제인지 약간 더 쉽게 파악가능합니다. 
+
+아무튼 그래서 우리도 server.js에서 DELETE요청시 성공/실패 코드를 보내도록 합시다. 
+
+
+
+
+
+AJAX 요청 성공 또는 실패시 특정 코드 실행하기
+
+
+
+당연히 데이터가 오거나 200 코드가 오면 성공이고, 데이터가 안오거나 400, 500 코드가 오면 실패라고 봅니다.
+
+성공이나 실패시 각각 기능을 실행하려면 done 혹은 fail 함수를 이용하시면 되겠습니다. 
+
+
+
+(list.ejs)
+
+<script>
+  $('.delete').click(function(e){
+    $.ajax({
+      method : 'DELETE',
+      url : '/delete',
+      data : { _id : e.target.dataset.id }
+    }).done((결과)=>{
+      //AJAX 성공시 실행할 코드적기
+    }).fail((xhr,code,err)=>{
+      //AJAX 실패시 실행할 코드적기
+    });
+  });
+</script>
+
+
+
+
+실제수업코드 :
+
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+  <script>
+    // 서버에 AJAX DELETE요청 날려주세요~
+    $('.delete').click(function(e){
+      let 글번호 = e.target.dataset.id;
+      // console.log(글번호);
+      let 지금누른거 = $(this);
+      $.ajax({
+        method : 'DELETE',
+        url : '/delete',
+        data : { _id : 글번호 }
+      }).done(function(결과){
+        //AJAX 성공시 실행할 코드는 여기
+        // console.log('성공했어요');
+        지금누른거.parent('li').fadeOut();
+      }).fail(function(xhr,textStatus, errorThrown){
+        console.log(xhr,textStatus, errorThrown);
+      })
+    });
+  </script>
+
+AJAX 성공시 done 함수 내부의 코드를 실행하고
+
+실패시 fail 함수 내부의 코드를 실행할 것입니다. 
+
+(function 대신 => 이거 써도 똑같은 함수입니다)
+
+참고로 fail 함수 내부의 3개의 파라미터는 차례로 jQuery의 XMLHttpRequest(몰라도됨), 에러코드, 에러메세지입니다.
+
+done 함수의 1개 파라미터는 요청시 받아온 결과가 담겨있습니다. (파일, 데이터 등)
+
+
+그럼 성공이나 실패 각각 경우에 따라서 안내문을 띄워준다든지 그런 UI개발을 할 수 있겠군요? 
+
+
+
+
+
+삭제요청 성공시 해당 게시물 <li>를 지워보자
+
+
+삭제버튼을 누르면 HTML화면은 변동이 없고 DB데이터만 지우고 있습니다.
+
+(AJAX는 새로고침 없이 몰래 요청을 처리해주니깐요)
+
+그럼 유저들이 삭제 된지 안된건지 모르겠죠?
+
+그러니 삭제 AJAX 성공시 해당 게시물의 <li>태그를 지워보도록 합시다. 
+
+
+
+
+
+
+그럼 코드를 수정해봅시다. 
+
+
+(list.ejs)
+
+<script>
+  $('.delete').click(function(){
+    $.ajax({
+      method : 'DELETE',
+      url : '/delete',
+      data : { _id : e.target.dataset.id }
+    }).done((결과)=>{
+      $(this).parent('li').fadeOut();
+    })
+  });
+</script>
+
+기존에 있던 done 함수 안에 한줄을 추가했습니다. 
+
+1. $(this) 라는 단어는 현재 클릭이벤트가 동작하는 곳입니다.  $(e.target)으로 대체 가능합니다. (지금 누른것)
+
+하지만 e.target이나 this 같은 키워드 뒤에 jQuery 함수를 붙이고 싶다면 $() 안에 싸매셔야합니다. 
+
+2. parent('li')는 부모 HTML 중 li태그를 찾아주세요~ 
+
+3. fadeOut()은 사라지게 해주세요~ 
+
+4. 근데 done() 안에 function(){} 말고 ()=>{} 이런 함수로 바꿔봤습니다. 그래야 this값의 변형없이 잘됩니다.
+
+입니다.
+
+
+
+Q. 그럼 $(this).parent('li').fadeOut() 는 무슨 뜻일까여?
+
+안알랴줌
+
+
+삭제 실패시 안내메세지를 보여주거나의 기능은
+
+fail 함수 내에 이리저리 코드를 짜면 될텐데
+
+여러분이 jQuery나 JavaScript 배워서 직접 할 수 있을테니 패스하겠습니다. 
