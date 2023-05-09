@@ -69,7 +69,7 @@ app.put('/edit', function (요청, 응답) {
 });
 
 
-// post 요청
+// 글쓰기 post 요청
 app.post('/add', function (요청, 응답) {
   // 현재까지 이 코드의 문제점이 이부분인데 DB에 저장된 데이터가 post컬렉션에 저장되어있는 갯수와
   // counter에 저장되어있는 totalPost의 숫자가 안맞음
@@ -77,7 +77,7 @@ app.post('/add', function (요청, 응답) {
   // 차라리 자동생성되는 몽고디비 아이디를 사용하게는게 맞음.
   // 아니면 몽고디비에서 데이터 다 지우고 totalPost : 0 으로 직접 수정해도 됨.
   db.collection('counter').findOne({ name: '게시물 총갯수' }, function (에러, 결과) {
-    console.log(결과);
+    // console.log(결과);
     let uniqueID = 결과.totalPost;
 
     db.collection('post').insertOne({ _id: uniqueID + 1, title: 요청.body.title, date: 요청.body.date }, function (에러, 결과) {
@@ -141,3 +141,34 @@ passport.use(new LocalStrategy({
     }
   })
 }));
+
+passport.serializeUser(function (user, done) {
+  done(null, user.id)
+});
+
+passport.deserializeUser(function (아이디, done) {
+  done(null, {})
+}); 
+
+
+// 내가 만들어보는 회원가입
+app.get('/authenticate', function (request, response) {
+  response.render('authenticate.ejs');
+})
+
+app.post('/authentication', function (request, response) {
+  db.collection('login').insertOne({
+    userID: request.body.id,
+    password: request.body.pw,
+    userEmail: request.body.email
+  }, function (에러, 결과) {
+    if (에러) {
+      console.log(에러);
+      response.redirect('/');
+      return;
+    }
+
+    console.log("새로운 사용자 등록 완료");
+    response.render('mypage.ejs');
+  })
+});

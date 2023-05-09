@@ -2,3 +2,12 @@ a {
   text-decoration: none !important;
   color: aliceblue;
 }
+.login-form {
+  margin-left: 20px;
+}
+.form-group {
+  margin: 5px 0;
+}
+.form-control {
+  margin: 5px 0;
+}
